@@ -1,0 +1,35 @@
+/* @import must precede all other rules (aside from @charset/@layer) per
+   the CSS spec -- this one line above "tailwindcss" was the actual build
+   failure caught in this session (Turbopack enforces the spec strictly
+   where some other bundlers silently tolerate the violation). */
+@import url("https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap");
+@import "tailwindcss";
+
+:root {
+  /* Core palette -- see design plan in chat. Each color is tied to a
+     concrete domain meaning, not chosen for decoration. */
+  --ink: #0f1b2d;          /* headers, nav, primary text */
+  --paper: #faf8f4;        /* page background */
+  --paper-raised: #ffffff; /* card surfaces */
+  --line: #dfd8c8;         /* hairline borders, on paper */
+  --line-ink: #253449;     /* hairline borders, on ink */
+
+  /* Indicator status accents -- map directly to the domain concept of
+     "performance against target," not arbitrary UI color. */
+  --status-on-track: #5b7a5e;
+  --status-on-track-bg: #eaf0ea;
+  --status-attention: #c17a2e;
+  --status-attention-bg: #f7ecdc;
+  --status-off-track: #a63d2f;
+  --status-off-track-bg: #f6e6e2;
+
+  --font-display: "Source Serif 4", Georgia, serif;
+  --font-ui: "Inter", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-ui);
+}
