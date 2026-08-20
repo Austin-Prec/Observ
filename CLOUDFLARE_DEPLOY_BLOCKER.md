@@ -1,6 +1,25 @@
-# Cloudflare Workers deployment — blocked on Node.js middleware support
+# Cloudflare Workers deployment — RESOLVED via layout-based auth
 
-## Status: blocked upstream, not a bug in this repo
+## Status: resolved (2026-08-20)
+
+The Node.js-middleware blocker described below is resolved. Auth checks
+were migrated out of `proxy.ts` (deleted) into route-group layouts, which
+`@opennextjs/cloudflare` fully supports today. `npm run pages:build`
+completes cleanly and produces `.open-next/worker.js`.
+
+See `app/(dashboard)/layout.tsx`, `app/(auth)/layout.tsx`,
+`app/api/auth/refresh/route.ts`, and `components/session-refresh.tsx` for
+the migrated implementation and the reasoning behind each piece.
+
+If `@opennextjs/cloudflare` ships Node-runtime middleware support later,
+there's no obligation to migrate back — this implementation works
+correctly on its own terms. Revisit only if a specific need arises (e.g.
+wanting the auth check to run before static asset serving, which
+middleware does and layouts don't).
+
+---
+
+## Original problem (kept for context)
 
 `npm run pages:build` (via `@opennextjs/cloudflare`) fails on this app with:
 
@@ -54,14 +73,15 @@ code changes should be needed here — `proxy.ts` and
 Re-run `npm run pages:build`; if it completes without the error above,
 this file can be deleted.
 
-## Fallback if this needs to ship before the upstream fix lands
+## What actually happened
 
-Move the auth check out of `proxy.ts` into a shared server-only helper
-(e.g. `lib/auth/require-user.ts`) called from the top of each
-`(dashboard)/**/layout.tsx` or `page.tsx`. This trades one central
-enforcement point for auth checks spread across each protected route, but
-runs entirely in Server Components/Route Handlers, which OpenNext supports
-today. Not done yet because it's a real amount of surface area to touch
-and get right (every dashboard route needs it, and it's easy to miss one)
-for a gap that appears actively being closed upstream — revisit if this
-turns out to be blocking a deploy on a deadline.
+Auth was migrated out of `proxy.ts` into a shared pattern:
+`(dashboard)/layout.tsx` and `(auth)/layout.tsx` each call
+`createClient()` + `getUser()` to gate/redirect, covering every route in
+their group automatically. A separate `/api/auth/refresh` Route Handler
+(callable from Server Components, unlike middleware) handles persisting
+refreshed session cookies back to the browser, since Server Components
+can validate a session but cannot write cookies -- `SessionRefresh`
+(a client component mounted in the dashboard layout) calls it once per
+navigation into the dashboard.
+
