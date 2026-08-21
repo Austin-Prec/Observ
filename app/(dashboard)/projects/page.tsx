@@ -38,7 +38,7 @@ export default async function ProjectsPage() {
     .order("created_at", { ascending: false });
 
   return (
-    <div className="min-h-screen" style={{ background: "var(--paper)" }}>
+    <div>
       <header
         className="border-b px-8 py-5 flex items-center justify-between"
         style={{ borderColor: "var(--line)" }}

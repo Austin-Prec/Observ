@@ -1,47 +1,19 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { SessionRefresh } from "@/components/session-refresh";
+import { Nav } from "./nav";
 
-/**
- * Auth guard for all (dashboard) routes, migrated from the pre-Next-16
- * middleware.ts (see lib/supabase/middleware.ts, now unused).
- *
- * Why this lives here instead of proxy.ts: as of Next.js 16, proxy.ts
- * always runs on the Node.js runtime with no config override, and
- * @opennextjs/cloudflare (our Cloudflare Workers deploy adapter) does not
- * yet support Node-runtime middleware -- see CLOUDFLARE_DEPLOY_BLOCKER.md.
- * Every (dashboard) route is already server-rendered per-request (see the
- * "f" markers in `next build` output), so a layout-level check here runs
- * on the same every-request cadence the old middleware did, just via
- * Server Components instead of the middleware hook.
- *
- * This covers every route under (dashboard) automatically -- Next runs
- * layouts before their child pages, so there's no per-page opt-in step
- * and no route can be added later without this check applying to it.
- */
-export default async function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const supabase = await createClient();
-
-  // IMPORTANT: do not run any code between createClient and
-  // supabase.auth.getUser() -- same caution as the original middleware.
-  // A simple mistake could make it very hard to debug issues with users
-  // being randomly logged out.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
-  }
-
+// Shared layout for every screen under the (dashboard) route group.
+// Until now, each screen (projects, forms, responses, dashboard,
+// analysis) was fully standalone with its own header and NO link to any
+// other screen -- a real, accumulated gap across four prior sessions:
+// a user landing on /projects after login had no way to discover
+// /dashboard, /forms, /responses, or /analysis except by typing a URL
+// directly. Adding this now, at the point a 5th top-level screen
+// (analysis) is introduced, rather than letting the gap compound
+// further.
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <>
-      <SessionRefresh />
+    <div className="min-h-screen" style={{ background: "var(--paper)" }}>
+      <Nav />
       {children}
-    </>
+    </div>
   );
 }
