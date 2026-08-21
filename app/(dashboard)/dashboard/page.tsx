@@ -81,7 +81,7 @@ export default async function DashboardPage() {
   };
 
   return (
-    <div>
+    <div className="min-h-screen" style={{ background: "var(--paper)" }}>
       <header className="border-b px-8 py-5" style={{ borderColor: "var(--line)" }}>
         <div
           className="text-xs tracking-[0.2em] uppercase mb-0.5"
